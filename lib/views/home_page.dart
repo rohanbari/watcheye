@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:watcheye/constants.dart';
 
+/// Home Page: The Main Screen
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -37,15 +38,20 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('STATUS', style: Theme.of(context).textTheme.titleSmall),
-            Text(_isActive ? 'Sleep peacefully 👁️' : 'Currently inactive 😴'),
+            Text(
+              _isActive
+                  ? 'I\'m active! Sleep peacefully 👁️'
+                  : 'Currently inactive 😴',
+            ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
+            // Toggle the flag and initiate monitoring if it was inactive
             _isActive = !_isActive;
-            if (_isActive) {
+            if (!_isActive) {
               _initMonitoring();
             }
 
@@ -67,7 +73,8 @@ class _HomePageState extends State<HomePage> {
         event.x * event.x + event.y * event.y + event.z * event.z,
       );
 
-      if (magnitude > 12 && _isActive) {
+      // Lesser the coefficient, more the sensitivity
+      if (magnitude > Constants.senseCoefficient && _isActive) {
         _triggerBeep();
       }
     });

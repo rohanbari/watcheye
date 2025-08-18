@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:watcheye/constants.dart';
 import 'package:watcheye/views/home_page.dart';
 
+/// Entry-point of the application.
 void main() => runApp(const App());
 
 class App extends StatelessWidget {
