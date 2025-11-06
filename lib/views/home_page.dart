@@ -50,10 +50,12 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           setState(() {
             // Toggle the flag and initiate monitoring if it was inactive
-            _isActive = !_isActive;
             if (!_isActive) {
               _initMonitoring();
+            } else {
+              _audioPlayer.stop();
             }
+            _isActive = !_isActive;
 
             icon = Icon(
               _isActive
