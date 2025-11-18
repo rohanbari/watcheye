@@ -1,16 +1,7 @@
-/*
- * Copyright (c) 2025 Rohan Bari <rohanbari@outlook.com>
- */
-
-import 'dart:async';
-import 'dart:math';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:watcheye/constants.dart';
+import 'package:watcheye/controllers/monitoring_controller.dart';
 
-/// Home Page: The Main Screen
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,12 +10,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isActive = false;
-  bool _isBeep = false;
-  Icon icon = Icon(Icons.notification_add_outlined);
+  bool _isMonitoring = false;
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  StreamSubscription<UserAccelerometerEvent>? _streamSubscription;
+  final MonitoringController _monitoringController = MonitoringController();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +27,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text('STATUS', style: Theme.of(context).textTheme.titleSmall),
             Text(
-              _isActive
+              _isMonitoring
                   ? 'I\'m active! Sleep peacefully 👁️'
                   : 'Currently inactive 😴',
             ),
@@ -47,56 +35,30 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            // Toggle the flag and initiate monitoring if it was inactive
-            if (!_isActive) {
-              _initMonitoring();
-            } else {
-              _audioPlayer.stop();
-            }
-            _isActive = !_isActive;
-
-            icon = Icon(
-              _isActive
-                  ? Icons.back_hand_outlined
-                  : Icons.notification_add_outlined,
-            );
-          });
-        },
-        child: icon,
+        onPressed: _toggleMonitoring,
+        child: Icon(_fabIconData),
       ),
     );
   }
 
-  void _initMonitoring() {
-    _streamSubscription = userAccelerometerEventStream().listen((event) {
-      double magnitude = sqrt(
-        event.x * event.x + event.y * event.y + event.z * event.z,
-      );
+  IconData get _fabIconData => _isMonitoring
+      ? Icons.back_hand_outlined
+      : Icons.notification_add_outlined;
 
-      // Lesser the coefficient, more the sensitivity
-      if (magnitude > Constants.senseCoefficient && _isActive) {
-        _triggerBeep();
-      }
-    });
-  }
-
-  void _triggerBeep() async {
-    if (_isBeep) {
-      return;
-    } else {
-      _isBeep = true;
+  void _toggleMonitoring() async {
+    final newState = await _monitoringController.toggleMonitoring(
+      _isMonitoring,
+    );
+    if (mounted) {
+      setState(() {
+        _isMonitoring = newState;
+      });
     }
-
-    await _audioPlayer.play(AssetSource('security_alarm.mp3'));
-    _isBeep = false;
   }
 
   @override
   void dispose() {
-    _streamSubscription?.cancel();
-    _audioPlayer.dispose();
+    _monitoringController.dispose();
     super.dispose();
   }
 }
